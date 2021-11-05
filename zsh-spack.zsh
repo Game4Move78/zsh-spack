@@ -40,9 +40,9 @@ _spack-unload-spec() {
     local ver=$(cut -f2 <<< $spec)
     local cname=$(cut -f3 <<< $spec)
     local cver=$(cut -f4 <<< $spec)
-    sed -i --follow-symlinks "/^module load ${name}-${ver}-${cname}-{cver}-.*/d" $SPACK_ENV
-    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_ENV)
-    sed -i --follow-symlinks "/^# ${name}@${ver}%${cname}@{cver} .*/d" $SPACK_ENV
+    sed -i --follow-symlinks "/^module load ${name}-${ver}-${cname}-{cver}-.*/d" $SPACK_MOD_ENV
+    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
+    sed -i --follow-symlinks "/^# ${name}@${ver}%${cname}@{cver} .*/d" $SPACK_MOD_ENV
     module unload $modname
     echo "Unloaded module $modname"
 }
@@ -53,8 +53,8 @@ _spack-load-spec() {
     local ver=$(cut -f2 <<< $spec)
     local cname=$(cut -f3 <<< $spec)
     local cver=$(cut -f4 <<< $spec)
-    spack module tcl loads "${name}@${ver}%${cname}@{cver}" >> $SPACK_ENV
-    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_ENV)
+    spack module tcl loads "${name}@${ver}%${cname}@{cver}" >> $SPACK_MOD_ENV
+    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
     echo "Loaded module $modname"
 }
 
@@ -67,7 +67,7 @@ spack-load-pkg() {
 }
 
 spack-list-loaded() {
-    modnames=$(awk "/^module load .+-.+-.+-.+-.+/ {print \$3}" $SPACK_ENV)
+    modnames=$(awk "/^module load .+-.+-.+-.+-.+/ {print \$3}" $SPACK_MOD_ENV)
     local specs=()
     for modname in "$modnames"; do
         local name=$(cut -d- -f1 <<< $modname)
@@ -79,8 +79,8 @@ spack-list-loaded() {
     echo $(IFS=$'\t' ; echo "$*")
 }
 
-if [ -z "$SPACK_ENV"]; then
-    export SPACK_ENV="$HOME/.zshenv.zsh"
+if [ -z "$SPACK_MOD_ENV"]; then
+    export SPACK_MOD_ENV="$HOME/.zshenv"
 fi
 
 alias spma='spack-load-pkg'
