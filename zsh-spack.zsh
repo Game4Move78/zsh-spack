@@ -40,10 +40,10 @@ _spack-unload-spec() {
     local ver=$(cut -f2 <<< $spec)
     local cname=$(cut -f3 <<< $spec)
     local cver=$(cut -f4 <<< $spec)
-    sed -i --follow-symlinks "/^module load ${name}-${ver}-${cname}-{cver}-.*/d" $SPACK_MOD_ENV
     modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
-    sed -i --follow-symlinks "/^# ${name}@${ver}%${cname}@{cver} .*/d" $SPACK_MOD_ENV
-    module unload $modname
+    sed -i.bak --follow-symlinks "/^# ${name}@${ver}%${cname}@${cver} .*/d" $SPACK_MOD_ENV
+    sed -i.bak --follow-symlinks "/^module load ${name}-${ver}-${cname}-${cver}-.*/d" $SPACK_MOD_ENV
+    module unload $modname > -
     echo "Unloaded module $modname"
 }
 
@@ -53,8 +53,9 @@ _spack-load-spec() {
     local ver=$(cut -f2 <<< $spec)
     local cname=$(cut -f3 <<< $spec)
     local cver=$(cut -f4 <<< $spec)
-    spack module tcl loads "${name}@${ver}%${cname}@{cver}" >> $SPACK_MOD_ENV
+    spack module tcl loads "${name}@${ver}%${cname}@${cver}" >> $SPACK_MOD_ENV
     modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
+    module load $modname > -
     echo "Loaded module $modname"
 }
 
