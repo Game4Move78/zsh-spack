@@ -69,13 +69,13 @@ spack-load-pkg() {
 spack-list-loaded() {
     modnames=$(awk "/^module load .+-.+-.+-.+-.+/ {print \$3}" $SPACK_MOD_ENV)
     local specs=()
-    for modname in "$modnames"; do
+    while read modname; do
         local name=$(cut -d- -f1 <<< $modname)
         local ver=$(cut -d- -f2 <<< $modname)
         local cname=$(cut -d- -f3 <<< $modname)
         local cver=$(cut -d- -f4 <<< $modname)
         specs+=("${name}@${ver}%${cname}@${cver}")
-    done
+    done <<< $modnames
     echo $(IFS=$'\t' ; echo "${specs[*]}")
 }
 
