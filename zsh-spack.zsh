@@ -74,12 +74,12 @@ spack-list-loaded() {
         local ver=$(cut -d- -f2 <<< $modname)
         local cname=$(cut -d- -f3 <<< $modname)
         local cver=$(cut -d- -f4 <<< $modname)
-        specs+=("${name}@${ver}%${cname}@{cver}")
+        specs+=("${name}@${ver}%${cname}@${cver}")
     done
-    echo $(IFS=$'\t' ; echo "$*")
+    echo $(IFS=$'\t' ; echo "${specs[*]}")
 }
 
-if [ -z "$SPACK_MOD_ENV"]; then
+if [ -z "$SPACK_MOD_ENV" ]; then
     export SPACK_MOD_ENV="$HOME/.zshenv"
 fi
 
