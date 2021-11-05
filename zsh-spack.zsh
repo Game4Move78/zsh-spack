@@ -80,7 +80,7 @@ spack-list-loaded() {
 }
 
 if [ -z "$SPACK_ENV"]; then
-    export SPACK_ENV="$HOME/zshenv.zsh"
+    export SPACK_ENV="$HOME/.zshenv.zsh"
 fi
 
 alias spma='spack-load-pkg'
