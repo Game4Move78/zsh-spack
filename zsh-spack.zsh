@@ -86,6 +86,6 @@ fi
 
 alias spma='spack-load-pkg'
 alias spmd='spack-unload-pkg'
-alias spmd='spack-list-pkg'
+alias spml='spack-list-loaded'
 alias spf='spack find'
 alias spl='spack list'
