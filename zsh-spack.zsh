@@ -34,21 +34,21 @@ _spack-select-tsv() {
 }
 
 _spack-tsv-spec() {
-    while read spec; do
-        local name=$(cut -f1 <<< $spec)
-        local ver=$(cut -f2 <<< $spec)
-        local cname=$(cut -f3 <<< $spec)
-        local cver=$(cut -f4 <<< $spec)
-        local vars=$(cut -f5 <<< $spec)
-        local arch=$(cut -f6 <<< $spec)
+    while read tsv; do
+        local name=$(cut -f1 <<< $tsv)
+        local ver=$(cut -f2 <<< $tsv)
+        local cname=$(cut -f3 <<< $tsv)
+        local cver=$(cut -f4 <<< $tsv)
+        local vars=$(cut -f5 <<< $tsv)
+        local arch=$(cut -f6 <<< $tsv)
         echo "${name}@${ver}%${cname}@${cver}${vars} arch=${arch}"
     done
 }
 
 _spack-tsv-modname() {
-    while read spec; do
-        local name=$(cut -f1 <<< $spec)
-        local hash=$(cut -f7 <<< $spec)
+    while read tsv; do
+        local name=$(cut -f1 <<< $tsv)
+        local hash=$(cut -f7 <<< $tsv)
         spack module tcl find "${name}/${hash}"
     done
 }
@@ -68,8 +68,8 @@ _spack-load-tsv() {
     while read tsv; do
         local modname=$(_spack-tsv-modname <<< $tsv)
         local spec=$(_spack-tsv-spec <<< $tsv)
-        local name=$(cut -f1 <<< $spec)
-        local hash=$(cut -f7 <<< $spec)
+        local name=$(cut -f1 <<< $tsv)
+        local hash=$(cut -f7 <<< $tsv)
         spack module tcl loads "${name}/${hash}" >> $SPACK_MOD_ENV
         module load $modname > /dev/null
         echo "Loaded module $modname"
