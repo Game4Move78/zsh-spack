@@ -21,11 +21,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+_spack-find-avail() {
+    echo $'name\tversion\tcompiler name\tcompiler version\tvariants\tarchitecture\thash'
+    spack find --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{variants}\t{arch}\t{hash}' $*
+}
+
 _spack-select-tsv() {
-    if ! specs=$(spack find --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{variants}\t{arch}\t{hash}' $*); then
+    if ! specs=$(_spack-find-avail $*); then
         return 1
     fi
-    echo $'name\tversion\tcompiler name\tcompiler version\tvariants\tarchitecture\thash'
     fzf -d $'\t' --select-1 --header-lines=1 <<< $specs
 }
 
