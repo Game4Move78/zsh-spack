@@ -23,8 +23,7 @@
 
 _spack-find-avail() {
     echo $'name\tversion\tcompiler name\tcompiler version\tvariants\tarchitecture\thash'
-    local pkgs=$(spack find --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{variants}\t{arch}\t{hash}')
-    grep -i $* <<< $pkgs
+    spack find --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{variants}\t{arch}\t{hash}' $*
 }
 
 _spack-select-tsv() {
