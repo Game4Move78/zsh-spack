@@ -22,52 +22,74 @@
 # SOFTWARE.
 
 _spack-find-avail() {
-    echo $'name\tversion\tcompiler name\tcompiler version\thash'
+    echo $'name\tversion\tcompiler name\tcompiler version\tvariants\tarchitecture\thash'
+    local pkgs=$(spack find --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{variants}\t{arch}\t{hash}')
     grep -i $* <<< $pkgs
 }
 
-_spack-select-spec() {
+_spack-select-tsv() {
     if ! specs=$(_spack-find-avail $*); then
-        return $?
+        return 1
     fi
     fzf -d $'\t' --select-1 --header-lines=1 <<< $specs
 }
 
-_spack-unload-spec() {
-    local spec=$(< /dev/stdin)
-    local name=$(cut -f1 <<< $spec)
-    local ver=$(cut -f2 <<< $spec)
-    local cname=$(cut -f3 <<< $spec)
-    local cver=$(cut -f4 <<< $spec)
-    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
-    sed -i.bak --follow-symlinks "/^# ${name}@${ver}%${cname}@${cver} .*/d" $SPACK_MOD_ENV
-    sed -i.bak --follow-symlinks "/^module load ${name}-${ver}-${cname}-${cver}-.*/d" $SPACK_MOD_ENV
-    module unload $modname > -
-    echo "Unloaded module $modname"
+_spack-tsv-spec() {
+    while read spec; do
+        local name=$(cut -f1 <<< $spec)
+        local ver=$(cut -f2 <<< $spec)
+        local cname=$(cut -f3 <<< $spec)
+        local cver=$(cut -f4 <<< $spec)
+        local vars=$(cut -f5 <<< $spec)
+        local arch=$(cut -f6 <<< $spec)
+        echo "${name}@${ver}%${cname}@${cver}${vars} arch=${arch}"
+    done
 }
 
-_spack-load-spec() {
-    local spec=$(< /dev/stdin)
-    local name=$(cut -f1 <<< $spec)
-    local ver=$(cut -f2 <<< $spec)
-    local cname=$(cut -f3 <<< $spec)
-    local cver=$(cut -f4 <<< $spec)
-    spack module tcl loads "${name}@${ver}%${cname}@${cver}" >> $SPACK_MOD_ENV
-    modname=$(awk "/^module load ${name}-${ver}-${cname}-${cver}-/ {print \$3}" $SPACK_MOD_ENV)
-    module load $modname > -
-    echo "Loaded module $modname"
+_spack-tsv-modname() {
+    while read spec; do
+        local name=$(cut -f1 <<< $spec)
+        local hash=$(cut -f7 <<< $spec)
+        spack module tcl find "${name}/${hash}"
+    done
+}
+
+_spack-unload-tsv() {
+    while read tsv; do
+        local modname=$(_spack-tsv-modname <<< $tsv)
+        local spec=$(_spack-tsv-spec <<< $tsv)
+        sed -i.bak --follow-symlinks "/^# $spec\$/d" $SPACK_MOD_ENV
+        sed -i.bak --follow-symlinks "/^module load $modname\$/d" $SPACK_MOD_ENV
+        module unload $modname > /dev/null
+        echo "Unloaded module $modname"
+    done
+}
+
+_spack-load-tsv() {
+    while read tsv; do
+        local modname=$(_spack-tsv-modname <<< $tsv)
+        local spec=$(_spack-tsv-spec <<< $tsv)
+        local name=$(cut -f1 <<< $spec)
+        local hash=$(cut -f7 <<< $spec)
+        spack module tcl loads "${name}/${hash}" >> $SPACK_MOD_ENV
+        module load $modname > /dev/null
+        echo "Loaded module $modname"
+    done
 }
 
 spack-unload-pkg() {
-    _spack-select-spec $* | _spack-unload-spec
+    _spack-select-tsv $* | _spack-unload-tsv
 }
 
 spack-load-pkg() {
-    _spack-select-spec $* | _spack-load-spec
+    _spack-select-tsv $* | _spack-load-tsv
 }
 
 spack-list-loaded() {
     modnames=$(awk "/^module load .+-.+-.+-.+-.+/ {print \$3}" $SPACK_MOD_ENV)
+    if [ -z "$modnames"]; then
+        return 0
+    fi
     local specs=()
     while read modname; do
         local name=$(cut -d- -f1 <<< $modname)
