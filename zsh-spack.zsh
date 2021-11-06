@@ -86,7 +86,7 @@ spack-load-pkg() {
 
 spack-list-loaded() {
     modnames=$(awk "/^module load .+-.+-.+-.+-.+/ {print \$3}" $SPACK_MOD_ENV)
-    if [ -z "$modnames"]; then
+    if [ -z "$modnames" ]; then
         return 0
     fi
     local specs=()
