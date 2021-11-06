@@ -23,7 +23,6 @@
 
 _spack-find-avail() {
     echo $'name\tversion\tcompiler name\tcompiler version\thash'
-    local pkgs=$(spack find --explicit --format $'{name}\t{version}\t{compiler.name}\t{compiler.version}\t{hash}')
     grep -i $* <<< $pkgs
 }
 
